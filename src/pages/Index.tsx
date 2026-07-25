@@ -40,12 +40,6 @@ export default function Index() {
         {/* Overlay for text readability */}
         <div data-ev-id="ev_9de03f00ac" className="absolute inset-0 bg-gradient-to-b from-[#0a2a3a]/10 via-[#0a2a3a]/30 to-[#1a4a5a]/20" />
         <div data-ev-id="ev_68fd800613" className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <h1 data-ev-id="ev_610f62f454" className="text-lg md:text-xl font-medium text-[#7DD3E8] mb-4 tracking-wider">
-            THE EXPERIENCE MACHINES
-          </h1>
-          <p data-ev-id="ev_879bbc7189" className="text-3xl md:text-4xl lg:text-5xl font-light text-white leading-tight mb-8 text-balance">
-            The <span data-ev-id="ev_c59043b1e3" className="font-semibold text-[#7DD3E8]">Moral Imagination and Hope Laboratory</span>
-          </p>
           <p data-ev-id="ev_b7260388ad" className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
             A philosophical laboratory where we invite the public into virtual worlds to explore questions of ethics, identity, and meaning.
           </p>
