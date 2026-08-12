@@ -737,11 +737,16 @@ if (typeof THREE.GLTFLoader === 'function') {
 // Central registry: swap a room from primitives to real art by adding a URL here.
 // Leave a value as null to keep the hand-built primitive geometry (the fallback).
 const ASSETS = {
-  plato:        './../src/assets/plato.glb',   // e.g. 'assets/plato.glb'
-  shipOfTheseus: null,  // e.g. 'assets/greek-ship.glb'
-  trolley:      null,   // e.g. 'assets/tram.glb'
-  tree:         null,   // e.g. 'assets/low-poly-tree.glb'
-  shack:        null,   // e.g. 'assets/forest-shack.glb'
+  // Runtime-loaded 3D files must live somewhere the browser can actually fetch.
+  // In a Vite project that means the PUBLIC folder, NOT src/assets (which is
+  // bundled and not served at a literal path). Put plato.glb at
+  // public/assets/plato.glb and set this to '/assets/plato.glb' to enable it.
+  // Left null for now so the built-in robed figure always shows.
+  plato:        null,   // '/assets/plato.glb' once the file is in public/assets/
+  shipOfTheseus: null,  // e.g. '/assets/greek-ship.glb'
+  trolley:      null,   // e.g. '/assets/tram.glb'
+  tree:         null,   // e.g. '/assets/low-poly-tree.glb'
+  shack:        null,   // e.g. '/assets/forest-shack.glb'
 };
 
 // Track attribution obligations as you add CC-BY assets.
@@ -863,9 +868,32 @@ function addPhilosopherNPC(x, z, personaKey, displayName) {
   npcGroup.add(primitiveBody, halo);
 
   // If a real model is registered for this philosopher, load it and hide
-  // the primitive body once it arrives. Until then the primitives show.
-  loadModel(ASSETS[personaKey], { x:0, y:0, z:0, scale:1, rotationY:Math.PI }, (model) => {
-    primitiveBody.visible = false;   // real figure takes over; halo + pedestal remain
+  // the primitive body ONLY once we've confirmed the model has real, visible
+  // geometry — then normalize its size and stand it on the pedestal. This is
+  // deliberately defensive: a missing, empty, or mis-scaled model must never
+  // leave an empty pedestal where the philosopher used to be.
+  loadModel(ASSETS[personaKey], { rotationY: Math.PI }, (model) => {
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    // Reject a model with no measurable geometry — keep the primitive instead.
+    if (!(size.y > 0.001)) {
+      console.warn('[MIHLab] loaded model has no visible geometry; keeping primitive figure for', displayName);
+      return;
+    }
+
+    // Normalize: scale to a human ~1.8 units tall, centre on x/z, drop feet
+    // onto the top of the pedestal (~y 0.22). Removes the "loaded but invisible
+    // because it's 100x too big or off at the origin" failure mode.
+    const targetHeight = 1.8;
+    const s = targetHeight / size.y;
+    model.scale.setScalar(s);
+    model.position.set(-center.x * s, -box.min.y * s + 0.22, -center.z * s);
+
+    primitiveBody.visible = false;   // safe now: real figure is present and sized
     npcGroup.add(model);
   });
 
